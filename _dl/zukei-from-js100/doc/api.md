@@ -10,7 +10,7 @@
 |---|---|---|
 | `drawing.line(x1,y1,x2,y2,style?)` | `path.line(x1,y1,x2,y2,style?)` | 線分 |
 | `drawing.rect(x,y,width,height,style?)` | `path.rect(x,y,width,height,style?)` | 左上相当の座標と幅・高さによる長方形 |
-| `drawing.circle(cx,cy,radius,style?)` | `path.circle(cx,cy,radius,style?)` | 中心と半径による円 |
+| `drawing.circle(cx,cy,radiusOrOptions,style?)` | `path.circle(cx,cy,radiusOrOptions,style?)` | 円・楕円・部分円弧 |
 | `drawing.polygon(points,style?)` | `path.polygon(points,style?)` | 自動的に閉じる多角形。3～100000頂点 |
 | `drawing.polyline(points,style?)` | `path.polyline(points,style?)` | 開いた折れ線。2～100000頂点 |
 | `drawing.regularPolygon(options?,style?)` | `path.regularPolygon(options?,style?)` | 正多角形 |
@@ -19,6 +19,48 @@
 `points`は`[[x,y], ...]`です。座標は有限数で絶対値1e9以下、幅・高さ・半径は正数です。
 直接描画の戻り値は`undefined`。`path.*`は描画せず、アプリ専用のパス値を返します。
 任意のJSオブジェクトをパスの代わりに渡すことはできません。
+
+## 円・楕円・円弧
+
+第3引数に数値を渡す従来形式はそのまま使用できます。
+オブジェクト形式も`drawing.circle`／`path.circle`で共通です。スタイルは第4引数に指定します。
+
+```javascript
+// 従来の円
+var circle = path.circle(30, 30, 20);
+// オブジェクト形式の円
+var same = path.circle(30, 30, { radius: 20 });
+// 楕円（全周）
+drawing.circle(85, 30, { radiusX: 30, radiusY: 15 }, { fill: "#66aaff" });
+// 円弧：右端から下端までの90度
+var arc = path.circle(30, 80, { radius: 20, start: 0, end: 90 });
+drawing.draw(arc, { stroke: "#0066cc", strokeWidth: 1 });
+// 楕円弧：逆方向
+var ellipseArc = path.circle(85, 80, {
+    radiusX: 30, radiusY: 15, start: 0, end: 270, clockwise: false
+});
+drawing.draw(ellipseArc);
+```
+
+| オプション | 意味 | 省略時 |
+|---|---|---|
+| `radius` | 円の半径。正の有限数 | radiusX / radiusYを指定しない場合は必須 |
+| `radiusX`, `radiusY` | X / Y方向の半径。両方とも正の有限数 | 両方省略ならradiusを使用 |
+| `start` | 開始角（度） | 0 |
+| `end` | 終了角（度） | 360 |
+| `clockwise` | trueで時計回り、falseで逆方向 | true |
+
+- 半径は現在の入力単位、最大1e9です。`radiusX`／`radiusY`は必ず両方を指定します。両方あれば`radius`より優先します。
+- 円弧の角度はSVG／DXFとも右方向が0°、画面上の下が90°です。`clockwise:true`は両形式で時計回りです。通常の座標系（SVGはYが下、DXFはYが上）は維持し、DXFでは角度から座標を求める際にY方向を反映します。これは`transform`の`rot`（座標系の正方向）とは別の角度規則です。
+- 楕円の角度はパラメータ角です。軸平行なら`x=cx+radiusX*cos(t)`、SVGは`y=cy+radiusY*sin(t)`、DXFは`y=cy-radiusY*sin(t)`となり、中心から見た幾何学的な角度とは異なります。
+- 指定方向にstartからendへ進みます。例えば`start:350,end:10`は既定方向で20°、`start:0,end:270,clockwise:false`は逆方向へ90°です。
+- start / endの差の絶対値は360°以下、同値はエラーです。差が±360°なら全周です。角度は有限数で絶対値1e9以下です。
+- 全周の円・楕円は閉じた図形で、従来どおり塗り・合成に対応します。
+- 部分円弧は開いたパスです。始点と終点を結ばず、扇形にもなりません。色のあるfillやAND / OR / XORの入力に指定するとエラーです。`fill:null`／`"none"`は使用できます。
+- 移動・コピー・回転・拡縮・鏡面反転に対応します。線幅は変更しません。
+- SVGは全周をcircle / ellipse、部分円弧をAコマンドのpathで保持します。通常DXFは円弧をARC、楕円弧を部分ELLIPSEで保持します。Fusionでは楕円弧を最大偏差0.01mmの開いた折れ線へ近似します。
+
+サンプル：[circle-arcs.sjs](../examples/circle-arcs.sjs) / [circle-arcs.djs](../examples/circle-arcs.djs)。
 
 ## パスを描画する
 
@@ -38,6 +80,7 @@ drawing.draw(p.moved(40, 0), { fill: "#ffcc66" });
 |---|---|
 | `drawing.setUnit(unit)` / `drawing.setDpi(dpi)` / `drawing.setCanvas(w,h)` | [単位・キャンバス](units-and-canvas.md) |
 | `drawing.setDxfMode(mode)` | [DXF・Fusion出力](output-formats.md) |
+| `path.offset(p,distance,options?)` | [輪郭の拡張・縮小、開いたパスの帯状化](path-offset.md) |
 | `path.transform(p,params?)` / `path.transformed(p,params?)` | [変換](transforms.md) |
 | `path.move(p,x,y)` / `path.moved(p,x,y)` / `p.move(x,y)` / `p.moved(x,y)` | [移動](transforms.md) |
 | `path.svgcombine(op,a,b,...)` / `path.combine(op,a,b,...)` | [合成](path-combine.md) |
@@ -63,7 +106,7 @@ drawing.polygon([[10, 50], [45, 45], [30, 75]], { fill: "#ccccff" });
 | `strokeWidth` | 線幅。正の有限数。図面の入力単位を使用。省略時は実寸0.25mm |
 | `fill` | 塗り色。既定はなし。`#RRGGBB`、`null`、`"none"`を指定可能 |
 
-- `line`と`polyline`には色のあるfillを指定できません。`fill: null` / `"none"`は許容します。
+- `line`・`polyline`・部分円弧には色のあるfillを指定できません。`fill: null` / `"none"`は許容します。
 - CSSの色名、透明度、グラデーション、破線は未対応です。
 - SVGは図形ごとの属性で反映し、角はround結合です。
 - DXFはTrueColorでRGB色を指定し、線幅は0～2.11mmの規定値のうち最も近い値（同距離では細い方）へ丸めます。

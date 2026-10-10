@@ -31,6 +31,7 @@ Visual Studio標準の、ソリューション側に最終成果物、プロジ�
 | `drawing_api.h` / `drawing_api.cpp` | JS API、引数検証、パス値の所有・メソッド登録 |
 | `drawing.h` / `drawing.cpp` | 図形データ、単位換算、描画の振り分け、SVGキャンバス |
 | `dxf.cpp` | DXFのテーブル・エンティティ・スタイル・HATCH |
+| `path_offset.cpp` | オフセット、入力・出力輪郭の検証、破綻検出 |
 | `path_ops.cpp` | Clipper2演算、合成の解決、DXF用の元図形展開 |
 | `svg_composite.cpp` | SVGの複合パスXOR・マスク・表示効果 |
 | `path_transform.cpp` | 移動・回転・拡縮、外接矩形、楕円・曲線処理 |
@@ -59,6 +60,8 @@ python tests/paths.py
 python tests/transforms.py
 python tests/radial_shapes.py
 python tests/polyline_move.py
+python tests/circle_arcs.py
+python tests/offsets.py
 .\x64\Release\zfj.exe tests\infinity.sjs --check
 ```
 
@@ -70,6 +73,8 @@ python tests/polyline_move.py
 | `transforms.py` | 変換・アンカー・コピー・楕円、DXF監査 |
 | `radial_shapes.py` | 正多角形・星型、直接描画、入力検証 |
 | `polyline_move.py` | 開いた折れ線、移動・コピー・エラー時の保持 |
+| `offsets.py` | 開閉パスの拡張・縮小、cap・join、穴、DXF・Fusion、エラー時の停止 |
+| `circle_arcs.py` | 円の互換性、楕円・円弧、方向・変換・入力検証、DXF監査・Fusion |
 | `infinity.sjs` | QuickJSのInfinity |
 
 [VS Code拡張の開発手順](vscode-development.md)、[依存ライブラリ](dependencies.md)も参照してください。

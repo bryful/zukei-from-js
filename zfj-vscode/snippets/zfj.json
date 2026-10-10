@@ -183,5 +183,43 @@
     "prefix": "zfusion",
     "body": "drawing.setDxfMode(\"fusion\");$0",
     "description": "DXFをFusion向けの輪郭として出力"
+  },
+  "ZFJ: Ellipse": {
+    "prefix": "zellipse",
+    "body": "drawing.circle(${1:50}, ${2:50}, { radiusX: ${3:30}, radiusY: ${4:15} });$0",
+    "description": "全周の楕円"
+  },
+  "ZFJ: Path Ellipse": {
+    "prefix": "zpathellipse",
+    "body": "var ${8:shape} = path.circle(${1:50}, ${2:50}, { radiusX: ${3:30}, radiusY: ${4:15} });$0",
+    "description": "全周の楕円のパスを作成。drawing.drawで描画"
+  },
+  "ZFJ: Arc": {
+    "prefix": "zarc",
+    "body": "drawing.circle(${1:50}, ${2:50}, { radius: ${3:20}, start: ${4:0}, end: ${5:270}, clockwise: ${6|true,false|} });$0",
+    "description": "開いた円弧。fillの色指定・合成は不可"
+  },
+  "ZFJ: Path Arc": {
+    "prefix": "zpatharc",
+    "body": "var ${8:shape} = path.circle(${1:50}, ${2:50}, { radius: ${3:20}, start: ${4:0}, end: ${5:270}, clockwise: ${6|true,false|} });$0",
+    "description": "開いた円弧。fillの色指定・合成は不可のパスを作成。drawing.drawで描画"
+  },
+  "ZFJ: Elliptical Arc": {
+    "prefix": "zellipsearc",
+    "body": "drawing.circle(${1:50}, ${2:50}, { radiusX: ${3:30}, radiusY: ${4:15}, start: ${5:0}, end: ${6:270}, clockwise: ${7|true,false|} });$0",
+    "description": "開いた楕円弧。fillの色指定・合成は不可"
+  },
+  "ZFJ: Path Elliptical Arc": {
+    "prefix": "zpathellipsearc",
+    "body": "var ${8:shape} = path.circle(${1:50}, ${2:50}, { radiusX: ${3:30}, radiusY: ${4:15}, start: ${5:0}, end: ${6:270}, clockwise: ${7|true,false|} });$0",
+    "description": "開いた楕円弧。fillの色指定・合成は不可のパスを作成。drawing.drawで描画"
+  },
+  "ZFJ: Offset": {
+    "prefix": "zoffset",
+    "body": [
+      "var ${1:expanded} = path.offset(${2:shape}, ${3:5}, { cap: \"${4|butt,square,round|}\", join: \"${5|miter,round,bevel|}\" });",
+      "drawing.draw(${1});$0"
+    ],
+    "description": "輪郭を拡張・縮小、または開いたパスを帯状化して描画"
   }
 }

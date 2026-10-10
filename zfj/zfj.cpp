@@ -190,7 +190,7 @@ int wmain(int argc, wchar_t **argv)
         const auto source = readSource(options.input);
         const auto utf8Path = options.input.u8string();
         const std::string filename(utf8Path.begin(), utf8Path.end());
-        const auto drawing = zfj::execute(source, filename);
+        const auto drawing = zfj::execute(source, filename, svg, options.unit);
         // --checkでもSVG合成まで検証する。明示したCLI単位はJSより優先する。
         const auto unit = options.unit.value_or(drawing.unit);
         const auto document = zfj::render(drawing, svg, unit, options.fusion);

@@ -33,6 +33,13 @@ Ctrl+Shift+Pから実行します。
 
 `drawing.` / `path.` を入力すると関数の候補を表示します。Ctrl+Spaceでも補完できます。
 関数名にマウスを重ねると説明を表示します。`zrect`・`zstar`・`zpolyline`などのスニペットも利用できます。
+
+- zellipse・zarc・zellipsearcで楕円・円弧・楕円弧を直接描画します。
+- zpathellipse・zpatharc・zpathellipsearcで対応するパスを作成します。
+- zoffsetでパスを拡張・縮小、または開いたパスを帯状化して描画します。閉じたパスの縮小は負の距離を指定します。
+
+円弧の角度は0が右、90が下。部分円弧には塗り色を指定できません。path.offsetは独立したパスを返し、パス値の.offset()は提供しません。新API対応のzfj.exeが必要です。
+
 実行ログやエラーは「出力」パネルのZFJに表示します。
 
 VS Code 1.90以降が必要です。通常利用にNode.js・npm・F5は不要です。

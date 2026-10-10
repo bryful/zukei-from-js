@@ -135,8 +135,9 @@ bool readStyle(JSContext *context, JSValueConst object, Shape &shape)
         return false;
     if (!JS_IsUndefined(fill.get()))
         shape.style.fill = readColor(context, fill.get());
-    if ((shape.kind == ShapeKind::Line || shape.kind == ShapeKind::Polyline) && shape.style.fill)
-        throw std::runtime_error("line/polyline does not support fill");
+    if ((shape.kind == ShapeKind::Line || shape.kind == ShapeKind::Polyline || shape.arc) &&
+        shape.style.fill)
+        throw std::runtime_error("Open line/polyline/arc does not support fill");
     Property width(context, object, "strokeWidth");
     if (JS_IsException(width.get()))
         return false;
@@ -487,8 +488,9 @@ JSValue combine(JSContext *context, JSValueConst, int count, JSValueConst *args)
         for (size_t i = start; i < drawing.shapes.size(); ++i)
         {
             if (drawing.shapes[i].kind == ShapeKind::Line ||
-                drawing.shapes[i].kind == ShapeKind::Polyline)
-                throw std::runtime_error("combine requires closed shapes; line is not supported");
+                drawing.shapes[i].kind == ShapeKind::Polyline || drawing.shapes[i].arc)
+                throw std::runtime_error(
+                    "combine requires closed shapes; open line/polyline/arc is not supported");
             group.children.push_back(std::move(drawing.shapes[i]));
         }
         drawing.shapes.resize(start);
@@ -547,9 +549,10 @@ JSValue combinePaths(JSContext *context, JSValueConst, int count, JSValueConst *
         for (int i = 1; i < count; ++i)
         {
             const auto &operand = readPath(context, args[i]);
-            if (operand.kind == ShapeKind::Line || operand.kind == ShapeKind::Polyline)
-                throw std::runtime_error(
-                    "combine/svgcombine requires closed paths; line is not supported");
+            if (operand.kind == ShapeKind::Line || operand.kind == ShapeKind::Polyline ||
+                operand.arc)
+                throw std::runtime_error("combine/svgcombine requires closed paths; open "
+                                         "line/polyline/arc is not supported");
             total += pathSize(operand, 1);
             if (total > 100000)
                 throw std::runtime_error("Path contains too many shapes");
@@ -561,6 +564,111 @@ JSValue combinePaths(JSContext *context, JSValueConst, int count, JSValueConst *
     {
         return JS_ThrowTypeError(context, "%s", error.what());
     }
+}
+
+/// オフセット距離と端点・結合を検証して独立したパスを返す。
+JSValue offsetValue(JSContext *context, JSValueConst, int count, JSValueConst *args)
+{
+    try
+    {
+        if (count != 2 && count != 3)
+            throw std::runtime_error("offset expects a path, distance and optional options");
+        const auto &source = readPath(context, args[0]);
+        const double distance = readCoordinate(context, args[1]);
+        std::string cap = "butt", join = "miter";
+        if (count == 3 && !JS_IsUndefined(args[2]))
+        {
+            if (!JS_IsObject(args[2]) || JS_IsNull(args[2]) || JS_IsArray(args[2]) ||
+                JS_IsFunction(context, args[2]))
+                throw std::runtime_error("offset options must be an object");
+            for (const auto name : {"cap", "join"})
+            {
+                Property value(context, args[2], name);
+                if (JS_IsException(value.get()))
+                    return JS_EXCEPTION;
+                if (JS_IsUndefined(value.get()))
+                    continue;
+                if (!JS_IsString(value.get()))
+                    throw std::runtime_error("offset cap/join must be a string");
+                const char *text = JS_ToCString(context, value.get());
+                if (!text)
+                    return JS_EXCEPTION;
+                (std::string(name) == "cap" ? cap : join) = text;
+                JS_FreeCString(context, text);
+            }
+        }
+        const auto &drawing = *static_cast<Drawing *>(JS_GetContextOpaque(context));
+        const auto unit = drawing.unitOverride.value_or(drawing.unit);
+        const double mmPerUnit = unit == "px" ? 25.4 / drawing.dpi : unit == "pt" ? 25.4 / 72 : 1;
+        return createPath(context, offsetPath(source, distance, cap, join, mmPerUnit));
+    }
+    catch (const std::exception &error)
+    {
+        return JS_ThrowTypeError(context, "%s", error.what());
+    }
+}
+
+/// 数値半径または円・楕円・円弧のオプションを読み取る。従来の呼び出しは保持する。
+bool readCircle(JSContext *context, JSValueConst value, Shape &shape)
+{
+    const double pi = std::acos(-1.0);
+    double rx = 0, ry = 0, start = 0, end = 360;
+    bool clockwise = true;
+    if (JS_IsNumber(value))
+        rx = ry = readCoordinate(context, value);
+    else
+    {
+        if (!JS_IsObject(value) || JS_IsNull(value) || JS_IsArray(value) ||
+            JS_IsFunction(context, value))
+            throw std::runtime_error("circle expects a radius or options object");
+        Property radius(context, value, "radius"), x(context, value, "radiusX"),
+            y(context, value, "radiusY"), from(context, value, "start"), to(context, value, "end"),
+            direction(context, value, "clockwise");
+        for (auto v : {radius.get(), x.get(), y.get(), from.get(), to.get(), direction.get()})
+            if (JS_IsException(v))
+                return false;
+        const bool ellipse = !JS_IsUndefined(x.get()) || !JS_IsUndefined(y.get());
+        if (ellipse)
+        {
+            if (JS_IsUndefined(x.get()) || JS_IsUndefined(y.get()))
+                throw std::runtime_error("Specify both radiusX and radiusY");
+            rx = readCoordinate(context, x.get());
+            ry = readCoordinate(context, y.get());
+            // radiusが併記されている場合も、不正値は見逃さない。
+            if (!JS_IsUndefined(radius.get()) && readCoordinate(context, radius.get()) <= 0)
+                throw std::runtime_error("Radius must be positive");
+        }
+        else
+            rx = ry = readCoordinate(context, radius.get());
+        if (!JS_IsUndefined(from.get()))
+            start = readCoordinate(context, from.get());
+        if (!JS_IsUndefined(to.get()))
+            end = readCoordinate(context, to.get());
+        if (!JS_IsUndefined(direction.get()))
+        {
+            if (!JS_IsBool(direction.get()))
+                throw std::runtime_error("clockwise must be a boolean");
+            clockwise = JS_ToBool(context, direction.get()) != 0;
+        }
+    }
+    if (rx <= 0 || ry <= 0)
+        throw std::runtime_error("Radii must be positive");
+    const double difference = end - start;
+    if (difference == 0 || std::abs(difference) > 360)
+        throw std::runtime_error("Arc angles must span more than 0 and at most 360 degrees");
+    shape.radius = std::max(rx, ry);
+    shape.minorRadius = std::min(rx, ry);
+    shape.kind = rx == ry ? ShapeKind::Circle : ShapeKind::Ellipse;
+    shape.angle = ry > rx ? pi / 2 : 0;
+    shape.arc = std::abs(difference) < 360;
+    const double ySign =
+        static_cast<Drawing *>(JS_GetContextOpaque(context))->svgCoordinates ? 1 : -1;
+    shape.curveStart = ySign * std::remainder(start, 360.0) * pi / 180 - shape.angle;
+    double sweep = std::fmod(clockwise ? difference : -difference, 360.0);
+    if (sweep < 0)
+        sweep += 360;
+    shape.curveSweep = ySign * (clockwise ? 1 : -1) * (shape.arc ? sweep : 360) * pi / 180;
+    return true;
 }
 
 /// 基本図形の共通コールバック。magicの100番台は図面へ追加せずパスを返す。
@@ -578,9 +686,6 @@ JSValue drawShape(JSContext *context, JSValueConst, int argumentCount, JSValueCo
         if (argumentCount != geometryArguments && argumentCount != geometryArguments + 1)
             throw std::runtime_error("Invalid argument count");
         Shape shape{kind, {}};
-        if (argumentCount > geometryArguments &&
-            !readStyle(context, arguments[geometryArguments], shape))
-            return JS_EXCEPTION;
         if (kind == ShapeKind::Polygon || kind == ShapeKind::Polyline)
         {
             if (!JS_IsArray(arguments[0]))
@@ -617,17 +722,16 @@ JSValue drawShape(JSContext *context, JSValueConst, int argumentCount, JSValueCo
         else
         {
             double x = readCoordinate(context, arguments[0]),
-                   y = readCoordinate(context, arguments[1]),
-                   value = readCoordinate(context, arguments[2]);
+                   y = readCoordinate(context, arguments[1]);
             if (kind == ShapeKind::Circle)
             {
-                if (value <= 0)
-                    throw std::runtime_error("Radius must be positive");
                 shape.points = {{x, y}};
-                shape.radius = value;
+                if (!readCircle(context, arguments[2], shape))
+                    return JS_EXCEPTION;
             }
             else
             {
+                double value = readCoordinate(context, arguments[2]);
                 double w = readCoordinate(context, arguments[3]);
                 if (kind == ShapeKind::Rectangle)
                 {
@@ -639,6 +743,9 @@ JSValue drawShape(JSContext *context, JSValueConst, int argumentCount, JSValueCo
                     shape.points = {{x, y}, {value, w}};
             }
         }
+        if (argumentCount > geometryArguments &&
+            !readStyle(context, arguments[geometryArguments], shape))
+            return JS_EXCEPTION;
         if (valueOnly)
             return createPath(context, std::move(shape));
         auto &drawing = *static_cast<Drawing *>(JS_GetContextOpaque(context));
@@ -715,6 +822,8 @@ void registerDrawingApi(JSContext *context, Drawing &drawing)
     JS_SetPropertyStr(
         context, pathApi, "transformed",
         JS_NewCFunctionMagic(context, transformValue, "transformed", 1, JS_CFUNC_generic_magic, 1));
+    JS_SetPropertyStr(context, pathApi, "offset",
+                      JS_NewCFunction(context, offsetValue, "offset", 2));
     JS_SetPropertyStr(context, pathApi, "regularPolygon",
                       JS_NewCFunctionMagic(context, createRadialPath, "regularPolygon", 0,
                                            JS_CFUNC_generic_magic, 0));

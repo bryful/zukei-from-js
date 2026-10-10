@@ -26,6 +26,18 @@ Clipper2Lib::PathsD booleanOperation(Clipper2Lib::ClipType operation,
 /// 元の閉じた図形をmm単位の輪郭へ変換する。円の最大近似誤差は0.01mm。
 Clipper2Lib::PathsD primitivePaths(const Shape &shape, double mmPerUnit)
 {
+    if (shape.kind == ShapeKind::Path)
+    {
+        Clipper2Lib::PathsD paths;
+        for (const auto &contour : shape.paths)
+        {
+            Clipper2Lib::PathD p;
+            for (const auto v : contour)
+                p.push_back({v.x * mmPerUnit, v.y * mmPerUnit});
+            paths.push_back(std::move(p));
+        }
+        return booleanOperation(Clipper2Lib::ClipType::Union, paths);
+    }
     Clipper2Lib::PathD path;
     if (shape.kind == ShapeKind::Circle || shape.kind == ShapeKind::Ellipse)
     {

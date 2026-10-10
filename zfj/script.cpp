@@ -5,7 +5,8 @@
 namespace zfj
 {
 /// QuickJSの生成・実行・例外取得・解放を行う。描画処理はdrawing APIに委譲する。
-Drawing execute(const std::string &source, const std::string &filename)
+Drawing execute(const std::string &source, const std::string &filename, bool svg,
+                std::optional<std::string> unitOverride)
 {
     auto runtime = JS_NewRuntime();
     if (!runtime)
@@ -27,6 +28,8 @@ Drawing execute(const std::string &source, const std::string &filename)
         throw std::runtime_error("Context allocation failed");
     }
     Drawing drawing;
+    drawing.svgCoordinates = svg;
+    drawing.unitOverride = std::move(unitOverride);
     registerDrawingApi(context, drawing);
     auto result =
         JS_Eval(context, source.data(), source.size(), filename.c_str(), JS_EVAL_TYPE_GLOBAL);

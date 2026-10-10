@@ -10,6 +10,7 @@
 | [描画・パスAPI](api.md) | 関数一覧、スタイル、正多角形・星型 |
 | [単位・キャンバス](units-and-canvas.md) | mm / pt / px、DPI、座標系 |
 | [パス変換](transforms.md) | 移動、コピー、回転、拡縮、アンカー |
+| [パスのオフセット](path-offset.md) | 開閉パスの拡張・縮小、端点、破綻時の停止 |
 | [パス合成](path-combine.md) | SVG表示合成とClipper2、編集時の違い |
 | [出力形式](output-formats.md) | SVG、DXF、Fusion向けモード |
 | [VS Code拡張の利用](vscode.md) | VSIXインストール、補完、書き出し、プレビュー、拡張子登録・解除 |

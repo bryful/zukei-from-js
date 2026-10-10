@@ -186,6 +186,16 @@ class DxfWriter
     /// 輪郭をLINE、CIRCLE、閉じたLWPOLYLINEのいずれかとして出力する。
     void writeOutline(const Shape &shape)
     {
+        if (shape.kind == ShapeKind::Path)
+        {
+            for (const auto &contour : shape.paths)
+            {
+                Shape polygon{ShapeKind::Polygon, contour};
+                polygon.style = shape.style;
+                writeOutline(polygon);
+            }
+            return;
+        }
         const auto point = shape.points.front();
         const int weight = nearestLineweight(shape.style.strokeWidth.value_or(0.25));
         if (shape.kind == ShapeKind::Line)
@@ -201,12 +211,27 @@ class DxfWriter
         }
         else if (shape.kind == ShapeKind::Circle)
         {
-            beginEntity("CIRCLE", shape.style.stroke.value_or(0), weight);
+            beginEntity(shape.arc ? "ARC" : "CIRCLE", shape.style.stroke.value_or(0), weight);
             tag(100, "AcDbCircle");
             tag(10, point.x);
             tag(20, point.y);
             tag(30, 0);
             tag(40, shape.radius);
+            if (shape.arc)
+            {
+                // DXFのARCは常に反時計回り。負方向は端点を交換する。
+                const double start =
+                    shape.curveStart + (shape.curveSweep < 0 ? shape.curveSweep : 0);
+                const double end = shape.curveStart + (shape.curveSweep > 0 ? shape.curveSweep : 0);
+                auto degrees = [](double value)
+                {
+                    double result = std::fmod(value * 180 / std::acos(-1.0), 360.0);
+                    return result < 0 ? result + 360 : result;
+                };
+                tag(100, "AcDbArc");
+                tag(50, degrees(start));
+                tag(51, degrees(end));
+            }
         }
         else if (shape.kind == ShapeKind::Ellipse)
         {
@@ -219,8 +244,18 @@ class DxfWriter
             tag(21, shape.radius * std::sin(shape.angle));
             tag(31, 0);
             tag(40, shape.minorRadius / shape.radius);
-            tag(41, 0);
-            tag(42, 2 * std::acos(-1.0));
+            const double start =
+                shape.arc ? shape.curveStart + (shape.curveSweep < 0 ? shape.curveSweep : 0) : 0;
+            const double end =
+                shape.arc ? shape.curveStart + (shape.curveSweep > 0 ? shape.curveSweep : 0)
+                          : 2 * std::acos(-1.0);
+            auto normalized = [](double t)
+            {
+                double result = std::fmod(t, 2 * std::acos(-1.0));
+                return result < 0 ? result + 2 * std::acos(-1.0) : result;
+            };
+            tag(41, shape.arc ? normalized(start) : start);
+            tag(42, shape.arc ? normalized(end) : end);
         }
         else
         {
@@ -250,7 +285,43 @@ class DxfWriter
         tag(2, "SOLID");
         tag(70, 1);
         tag(71, 0);
-        tag(91, 1);
+        tag(91, shape.kind == ShapeKind::Path ? shape.paths.size() : 1);
+        if (shape.kind == ShapeKind::Path)
+        {
+            // 最大の輪郭は外周。全体を鏡面反転しても外周・穴の区別を維持する。
+            auto areaOf = [](const std::vector<Point> &contour)
+            {
+                double area = 0;
+                for (size_t i = 0; i < contour.size(); ++i)
+                {
+                    const auto a = contour[i], b = contour[(i + 1) % contour.size()];
+                    area += (a.x - contour[0].x) * (b.y - contour[0].y) -
+                            (b.x - contour[0].x) * (a.y - contour[0].y);
+                }
+                return area;
+            };
+            double outerArea = 0;
+            for (const auto &contour : shape.paths)
+                if (std::abs(areaOf(contour)) > std::abs(outerArea))
+                    outerArea = areaOf(contour);
+            for (const auto &contour : shape.paths)
+            {
+                tag(92, (areaOf(contour) > 0) == (outerArea > 0) ? 3 : 2);
+                tag(72, 0);
+                tag(73, 1);
+                tag(93, contour.size());
+                for (const auto p : contour)
+                {
+                    tag(10, p.x);
+                    tag(20, p.y);
+                }
+                tag(97, 0);
+            }
+            tag(75, 0);
+            tag(76, 1);
+            tag(98, 0);
+            return;
+        }
         if (shape.kind == ShapeKind::Circle || shape.kind == ShapeKind::Ellipse)
         {
             tag(92, 1);

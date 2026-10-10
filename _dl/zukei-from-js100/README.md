@@ -6,8 +6,8 @@ JavaScriptで図形を記述して、SVG・DXFを作成するWindows用コンソ
 - `.sjs` → SVG。イラストや画面素材向け。
 - `.djs` → DXF。CAD向け。Fusion用の輪郭出力にも対応。
 
-線分・長方形・円・多角形・折れ線・正多角形・星型を描けます。
-色・線幅・塗り、パスの移動・回転・拡縮、SVG用のAND / OR / XORにも対応しています。
+線分・長方形・円・楕円・円弧・多角形・折れ線・正多角形・星型を描けます。
+色・線幅・塗り、パスの移動・回転・拡縮・オフセット、SVG用のAND / OR / XORにも対応しています。
 
 ## インストール
 
@@ -141,7 +141,9 @@ SVG表示合成とClipper2の輪郭合成は、保存するデータと編集性
 
 - [基本のSVG](examples/basic.sjs) / [DXF](examples/basic.djs)
 - [色・線幅・塗り](examples/styles.sjs)
+- [円・楕円・円弧](examples/circle-arcs.sjs)
 - [正多角形・星型](examples/radial-shapes.sjs)
+- [パスのオフセット](examples/offsets.sjs)（[仕様](doc/path-offset.md)）
 - [折れ線・パス移動](examples/polyline-move.sjs)
 - [SVG表示合成](examples/svg-render-combine.sjs) / [Clipper2の輪郭合成](examples/path-combine.sjs)
 - [ドキュメント一覧](doc/README.md)：API仕様、出力形式などの詳細

@@ -4,7 +4,7 @@
   "publisher": "zfj-local",
   "license": "MIT",
   "description": "VS CodeからZFJを利用するための拡張機能。",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "engines": {
     "vscode": "^1.90.0"
   },

@@ -4,4 +4,4 @@ drawing.setCanvas(120, 100);
 var a = path.rect(10, 10, 70, 70);
 var b = path.circle(75, 55, 30);
 var v = path.combine("xor", a, b);
-drawing.draw(v, { stroke: null, fill: "#66aaff" });
+drawing.draw(v, { stroke:"#000000", fill: "#66aaff" });

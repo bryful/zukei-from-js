@@ -2,7 +2,7 @@
 
 [ドキュメント一覧](README.md) / [利用ガイド](../README.md)
 
-現在の拡張バージョンは0.0.5です。コマンド名は英語表記です。
+現在の拡張バージョンは0.0.6です。コマンド名は英語表記です。
 現在はVSIXによるインストールのみです。Marketplaceでは公開していません。
 VS Code 1.90以降と、GitHub Releasesの配布アーカイブに含まれる`zfj.exe`を使用します。
 通常利用にNode.js・npmやF5での開発ホスト起動は不要です。
@@ -105,10 +105,17 @@ VS Codeで `.sjs`・`.djs` を開くと、右下の言語モードが
 
 `var p = path.circle(0, 0, 10);` のように宣言した変数では `p.` にmove/movedを補完します。
 `var q = p.moved(30, 0);` のコピーや、同一行の `path.circle(0,0,10).moved(30,40).` も対象です。
+
+- zellipse・zarc・zellipsearcで楕円・円弧・楕円弧を直接描画します。
+- zpathellipse・zpatharc・zpathellipsearcで対応するパスを作成します。
+- zoffsetでパスを拡張・縮小、または開いたパスを帯状化して描画します。閉じたパスの縮小は負の距離を指定します。
+
+円弧の角度は0が右、90が下。部分円弧には塗り色を指定できません。path.offsetは独立したパスを返し、パス値の.offset()は提供しません。新API対応のzfj.exeが必要です。
+
 簡易な構文照合のため、別名への代入・関数の戻り値・変数の再代入などの型推論は行いません。
 
 `path`で作成した図形は `drawing.draw` を呼ぶまで表示されません。合成はSVG用で、
-DXFでは元図形を出力します。`scale`は100が等倍の百分率、回転は度数です。
+DXFでは元図形を出力します。ただしpath.offsetで計算した輪郭はDXFにも出力されます。`scale`は100が等倍の百分率、回転は度数です。
 `canvasCenter`アンカーを使う場合は先に `drawing.setCanvas` を指定してください。
 
 以前 `files.associations` に `.sjs`・`.djs` をJavaScriptとして登録した場合は、

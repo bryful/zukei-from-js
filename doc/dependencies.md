@@ -23,7 +23,7 @@ JavaScriptの実行に使用します。Infinityの定義など、同梱ソー�
 - 配置：`third_party/clipper2`
 - ライセンス：[Boost Software License 1.0](../third_party/clipper2/LICENSE)
 
-SVG用の輪郭合成に使用します。`clipper.engine.cpp`をビルド対象としています。
+SVG用の輪郭合成に使用します。`clipper.engine.cpp`と、オフセット用の`clipper.offset.cpp`をビルド対象としています。
 両ライブラリともソースを同梱しており、zfjのビルド時に別途インストールする必要はありません。
 
 ## その他

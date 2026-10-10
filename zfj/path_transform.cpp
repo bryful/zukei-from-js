@@ -28,10 +28,31 @@ Bounds pathBounds(const Shape &shape)
         const double a = shape.radius;
         const double b = shape.kind == ShapeKind::Circle ? a : shape.minorRadius;
         const double angle = shape.kind == ShapeKind::Circle ? 0 : shape.angle;
-        const double x = std::hypot(a * std::cos(angle), b * std::sin(angle));
-        const double y = std::hypot(a * std::sin(angle), b * std::cos(angle));
-        bounds.include({shape.points[0].x - x, shape.points[0].y - y});
-        bounds.include({shape.points[0].x + x, shape.points[0].y + y});
+        if (shape.arc)
+        {
+            bounds.include(curvePoint(shape, shape.curveStart));
+            bounds.include(curvePoint(shape, shape.curveStart + shape.curveSweep));
+            const double pi = std::acos(-1.0);
+            // x/yの極値候補を開始角からの進行距離で判定する。
+            const double tx = std::atan2(-b * std::sin(angle), a * std::cos(angle));
+            const double ty = std::atan2(b * std::cos(angle), a * std::sin(angle));
+            for (const double t : {tx, tx + pi, ty, ty + pi})
+            {
+                double distance =
+                    std::fmod((shape.curveSweep > 0 ? 1 : -1) * (t - shape.curveStart), 2 * pi);
+                if (distance < 0)
+                    distance += 2 * pi;
+                if (distance <= std::abs(shape.curveSweep) + 1e-12)
+                    bounds.include(curvePoint(shape, t));
+            }
+        }
+        else
+        {
+            const double x = std::hypot(a * std::cos(angle), b * std::sin(angle));
+            const double y = std::hypot(a * std::sin(angle), b * std::cos(angle));
+            bounds.include({shape.points[0].x - x, shape.points[0].y - y});
+            bounds.include({shape.points[0].x + x, shape.points[0].y + y});
+        }
     }
     else
         for (const auto point : shape.points)
@@ -78,11 +99,26 @@ void transformPath(Shape &shape, Point pos, double degrees, Point scale, Point a
         const double minor = std::abs(u.x * v.y - u.y * v.x) / major;
         if (!std::isfinite(major) || !std::isfinite(minor) || major <= 0 || minor <= 0)
             throw std::runtime_error("Transform produces a degenerate circle or ellipse");
+        // 変換前の開始点と向きを新しい主軸パラメータへ写す。
+        const auto start = vector({a * std::cos(angle) * std::cos(shape.curveStart) -
+                                       b * std::sin(angle) * std::sin(shape.curveStart),
+                                   a * std::sin(angle) * std::cos(shape.curveStart) +
+                                       b * std::cos(angle) * std::sin(shape.curveStart)});
         shape.radius = major;
         shape.minorRadius = minor;
         shape.angle = std::atan2(2 * xy, xx - yy) / 2;
         shape.kind =
             std::abs(major - minor) <= major * 1e-12 ? ShapeKind::Circle : ShapeKind::Ellipse;
+        if (shape.kind == ShapeKind::Circle)
+            shape.angle = 0;
+        if (shape.arc)
+        {
+            const double c = std::cos(shape.angle), s = std::sin(shape.angle);
+            shape.curveStart = std::atan2((-start.x * s + start.y * c) / minor,
+                                          (start.x * c + start.y * s) / major);
+            if (scale.x * scale.y < 0)
+                shape.curveSweep = -shape.curveSweep;
+        }
     }
     for (auto &p : shape.points)
         p = point(p);
@@ -157,14 +193,17 @@ std::vector<Point> sampleCurve(const Shape &shape, double mmPerUnit)
     const double pi = std::acos(-1.0);
     const double halfAngle =
         std::acos(std::clamp(1.0 - 0.01 / (shape.radius * mmPerUnit), -1.0, 1.0));
-    const double requested = halfAngle > 0 ? std::ceil(pi / halfAngle) : 100001;
-    if (requested > 100000)
+    const double span = shape.arc ? std::abs(shape.curveSweep) : 2 * pi;
+    const double requested = halfAngle > 0 ? std::ceil(span / (2 * halfAngle)) : 100001;
+    if (requested > (shape.arc ? 99999 : 100000))
         throw std::runtime_error("Curve needs too many vertices for 0.01mm path tolerance");
     const size_t count = static_cast<size_t>(std::max(12.0, requested));
     std::vector<Point> points;
-    points.reserve(count);
-    for (size_t i = 0; i < count; ++i)
-        points.push_back(curvePoint(shape, 2 * pi * static_cast<double>(i) / count));
+    points.reserve(count + (shape.arc ? 1 : 0));
+    for (size_t i = 0; i < count + (shape.arc ? 1 : 0); ++i)
+        points.push_back(curvePoint(
+            shape, shape.arc ? shape.curveStart + shape.curveSweep * static_cast<double>(i) / count
+                             : 2 * pi * static_cast<double>(i) / count));
     return points;
 }
 
@@ -180,6 +219,15 @@ void writeSvgCurveContour(std::ostream &out, const Shape &shape)
 {
     const double b = shape.kind == ShapeKind::Circle ? shape.radius : shape.minorRadius;
     const double angle = shape.kind == ShapeKind::Circle ? 0 : shape.angle * 180 / std::acos(-1.0);
+    if (shape.arc)
+    {
+        const auto start = curvePoint(shape, shape.curveStart);
+        const auto end = curvePoint(shape, shape.curveStart + shape.curveSweep);
+        out << 'M' << start.x << ' ' << start.y << 'A' << shape.radius << ' ' << b << ' ' << angle
+            << ' ' << (std::abs(shape.curveSweep) > std::acos(-1.0) ? 1 : 0) << ' '
+            << (shape.curveSweep > 0 ? 1 : 0) << ' ' << end.x << ' ' << end.y;
+        return;
+    }
     const auto start = curvePoint(shape, 0), middle = curvePoint(shape, std::acos(-1.0));
     out << 'M' << start.x << ' ' << start.y << 'A' << shape.radius << ' ' << b << ' ' << angle
         << " 0 1 " << middle.x << ' ' << middle.y << 'A' << shape.radius << ' ' << b << ' ' << angle

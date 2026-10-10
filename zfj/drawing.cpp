@@ -122,6 +122,12 @@ std::string renderSvg(const Drawing &drawing, const std::string &unit, double mm
             output << "<line x1=\"" << point.x << "\" y1=\"" << point.y << "\" x2=\""
                    << shape.points[1].x << "\" y2=\"" << shape.points[1].y << "\"";
         }
+        else if (shape.arc)
+        {
+            output << "<path d=\"";
+            writeSvgCurveContour(output, shape);
+            output << "\"";
+        }
         else if (shape.kind == ShapeKind::Circle)
         {
             output << "<circle cx=\"" << point.x << "\" cy=\"" << point.y << "\" r=\""
@@ -157,13 +163,20 @@ std::string render(Drawing drawing, bool svg, const std::string &unit, bool fusi
         if ((fusion || drawing.fusion) && shape.kind == ShapeKind::Ellipse)
         {
             shape.points = sampleCurve(shape, mmPerUnit);
-            shape.kind = ShapeKind::Polygon;
+            shape.kind = shape.arc ? ShapeKind::Polyline : ShapeKind::Polygon;
+            shape.arc = false;
         }
         for (auto &point : shape.points)
         {
             point.x *= mmPerUnit;
             point.y *= mmPerUnit;
         }
+        for (auto &contour : shape.paths)
+            for (auto &point : contour)
+            {
+                point.x *= mmPerUnit;
+                point.y *= mmPerUnit;
+            }
         shape.radius *= mmPerUnit;
         shape.minorRadius *= mmPerUnit;
         if (shape.style.strokeWidth)

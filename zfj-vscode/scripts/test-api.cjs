@@ -111,7 +111,7 @@ async function main() {
     const text = namespace + '.';
     const document = { lineAt: () => ({ text }), getWordRangeAtPosition: () => undefined, getText: () => text };
     const items = completionProvider.provideCompletionItems(document, { line: 0, character: text.length });
-    assert.equal(items.length, 13);
+    assert.equal(items.length, metadata.length);
     for (const item of items) {
       assert.ok(item.detail.startsWith(namespace + '.'));
       checkScript(namespace + '.' + expandSnippet(item.insertText.value) + ';');
@@ -132,6 +132,7 @@ async function main() {
   }, { line: 0, character: 11 }), undefined);
 
   for (const [source, receiver] of [
+    ['var p = path.offset(path.rect(0,0,20,20),2);\np.', 'p'],
     ['var p = path.polyline([[0,0],[10,10]]);\np.', 'p'],
     ['var p = path.star(); var q = p.moved(30,0);\nq.', 'q'],
     ['path.circle(0,0,10).', 'path.circle(0,0,10)'],
@@ -168,8 +169,20 @@ async function main() {
     checkScript(`drawing.draw(path.transformed(shape,{anchor:"${anchor}",rot:30,scale:[150,80]}));`);
   }
 
+  for (const clockwise of [true, false]) {
+    for (const namespace of ['drawing', 'path']) {
+      const call = namespace + '.circle(50,50,{radiusX:30,radiusY:15,start:0,end:270,clockwise:' + clockwise + '})';
+      checkScript(namespace === 'path' ? 'drawing.draw(' + call + ');' : call + ';');
+    }
+  }
+  for (const cap of ['butt', 'square', 'round']) {
+    for (const join of ['miter', 'round', 'bevel']) {
+      checkScript('drawing.draw(path.offset(path.polyline([[0,0],[50,0],[50,50]]),5,{cap:"' + cap + '",join:"' + join + '"}));');
+    }
+  }
+  for (const distance of [-5,0,5]) { checkScript('drawing.draw(path.offset(shape,' + distance + '));'); }
   let exports = 0;
-  for (const name of ['basic', 'combine', 'path-values', 'transforms', 'radial-shapes', 'polyline-move', 'svg-render-combine', 'path-combine']) {
+  for (const name of ['basic', 'combine', 'path-values', 'transforms', 'radial-shapes', 'polyline-move', 'svg-render-combine', 'path-combine', 'circle-arcs', 'offsets']) {
     for (const extension of ['sjs', 'djs']) {
       const input = path.join(repository, 'examples', `${name}.${extension}`);
       if (!fs.existsSync(input)) { continue; }
@@ -180,6 +193,11 @@ async function main() {
       assert.deepEqual(errors, []);
       const content = fs.readFileSync(destination, 'utf8');
       assert.ok(extension === 'sjs' ? content.includes('<svg') : content.includes('ENTITIES'));
+      if (name === 'circle-arcs') {
+        assert.ok(extension === 'sjs' ? /<path[^>]*d="[^"]*A/.test(content) : /\bARC\b/.test(content));
+        assert.ok(extension === 'sjs' ? content.includes('<ellipse') : /\bELLIPSE\b/.test(content));
+      }
+      if (name === 'offsets') { assert.ok(content.includes(extension === 'sjs' ? '<path' : 'LWPOLYLINE')); }
       exports++;
     }
   }
@@ -193,7 +211,7 @@ async function main() {
   const panel = panels.at(-1);
   const image = () => Buffer.from(panel.webview.html.match(/base64,([^"]+)/)[1], 'base64').toString('utf8');
   assert.ok(image().includes('<polygon'));
-  for (const [name, marker] of [['transforms', '<ellipse'], ['polyline-move', '<polyline'], ['svg-render-combine', 'evenodd'], ['path-combine', '<path']]) {
+  for (const [name, marker] of [['transforms', '<ellipse'], ['polyline-move', '<polyline'], ['svg-render-combine', 'evenodd'], ['path-combine', '<path'], ['circle-arcs', '<ellipse'], ['offsets', '<path']]) {
     fs.copyFileSync(path.join(repository, 'examples', name + '.sjs'), previewInput);
     await saveHandler(activeDocument);
     assert.ok(image().includes(marker), name);
@@ -208,7 +226,7 @@ async function main() {
   assert.ok(panel.webview.html.includes('更新に失敗'));
   panel.dispose();
   assert.equal(saveHandler(activeDocument), undefined);
-  console.log(`PASS: 26 API completions/hover, path-value methods/chains, ${checks} executable checks, ${exports} SVG/DXF exports, preview refresh (polygon/polyline/ellipse/path/mask) and error retention`);
+  console.log(`PASS: 27 API completions/hover, path-value methods/chains, ${checks} executable checks, ${exports} SVG/DXF exports, preview refresh (polygon/polyline/ellipse/path/mask) and error retention`);
 }
 
 main().catch(error => { console.error(error); process.exitCode = 1; }).finally(() => {

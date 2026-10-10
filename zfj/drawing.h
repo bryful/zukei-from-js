@@ -51,6 +51,9 @@ struct Shape
     std::vector<std::vector<Point>> paths; ///< SVG合成結果の複数輪郭。穴も別輪郭で保持する。
     double minorRadius = 0;                ///< Ellipseの短半径。radiusは長半径。
     double angle = 0;                      ///< Ellipseの長軸方向。ラジアン。
+    bool arc = false;                      ///< 円・楕円の部分円弧。開いた輪郭。
+    double curveStart = 0;                 ///< 長軸からの開始パラメータ。ラジアン。
+    double curveSweep = 6.283185307179586; ///< 符号付きの円弧角。反転時には符号を反転。
     bool simpleContour = false;            ///< 正多角形・星型・長方形変換由来の単純輪郭。
 };
 
@@ -71,6 +74,10 @@ void transformPath(Shape &shape, Point pos, double degrees, Point scale, Point a
 /// 幾何データの種類と線幅を変えず、全頂点・円中心を相対移動する。
 void movePath(Shape &shape, Point offset);
 
+/// 元パスを変更せず、閉じたオフセット輪郭を生成する。破綻した入力・結果は例外。
+Shape offsetPath(const Shape &source, double distance, const std::string &cap,
+                 const std::string &join, double mmPerUnit);
+
 /// 正多角形を作る。edgeRadius=trueならradiusは中心から辺の中心までの距離。
 Shape makeRegularPolygon(Point center, double radius, unsigned sides, bool edgeRadius, double rot);
 
@@ -86,7 +93,7 @@ std::vector<Point> sampleCurve(const Shape &shape, double mmPerUnit);
 /// SVGの楕円要素を出力する。スタイルは呼び出し側が指定する。
 void writeSvgEllipse(std::ostream &output, const Shape &shape);
 
-/// 円・楕円の元輪郭をSVGの2本の円弧として出力する。
+/// 円・楕円の全周は2本、部分円弧は1本のSVG円弧として出力する。
 void writeSvgCurveContour(std::ostream &output, const Shape &shape);
 
 /// SVGの固定キャンバス。幅・高さは図面の入力単位、原点は(0,0)。
@@ -102,10 +109,12 @@ struct Drawing
     std::vector<Shape> shapes;
     std::string unit = "mm";
     double dpi = 72;
+    std::optional<std::string> unitOverride; ///< offsetの近似精度に使うCLI優先の単位。
     std::optional<Canvas> canvas;
-    bool fusion = false;       ///< DXFをFusion向けの輪郭だけで出力する。
-    unsigned combineDepth = 0; ///< JSコールバックの過剰なネストを防ぐ実行中カウンター。
-    uint32_t pathClassId = 0;  ///< この実行のQuickJSランタイムで発行したパス値のクラスID。
+    bool svgCoordinates = true; ///< 円弧の時計回り指定を出力先のY軸方向へ換算する。
+    bool fusion = false;        ///< DXFをFusion向けの輪郭だけで出力する。
+    unsigned combineDepth = 0;  ///< JSコールバックの過剰なネストを防ぐ実行中カウンター。
+    uint32_t pathClassId = 0;   ///< この実行のQuickJSランタイムで発行したパス値のクラスID。
 };
 
 /// 図面をSVGまたはAutoCAD 2004 ASCII DXFへ変換する。unitはCLI優先順位を解決済みの単位。
