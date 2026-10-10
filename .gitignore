@@ -1,0 +1,13 @@
+.vs/
+**/x64/
+**/Debug/
+**/Release/
+*.user
+build.log
+examples/*.svg
+examples/*.dxf
+
+tests/.deps/
+tests/style-output/
+
+tests/path-output/

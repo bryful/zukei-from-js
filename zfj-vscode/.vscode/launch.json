@@ -1,0 +1,25 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "ZFJ拡張機能を実行",
+      "type": "node",
+      "request": "attach",
+      "port": 9333,
+      "address": "127.0.0.1",
+      "timeout": 30000,
+      "skipFiles": ["<node_internals>/**"],
+      "outFiles": ["${workspaceFolder}/out/**/*.js"],
+      "preLaunchTask": "ZFJ: start local host"
+    },
+    {
+      "name": "ZFJ: 手動起動したホストに接続",
+      "type": "node",
+      "request": "attach",
+      "port": 9333,
+      "address": "127.0.0.1",
+      "outFiles": ["${workspaceFolder}/out/**/*.js"],
+      "skipFiles": ["<node_internals>/**"]
+    }
+  ]
+}

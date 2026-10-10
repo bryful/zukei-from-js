@@ -1,0 +1,108 @@
+{
+  "name": "zfj-vscode",
+  "displayName": "ZFJ",
+  "publisher": "zfj-local",
+  "license": "MIT",
+  "description": "VS CodeからZFJを利用するための拡張機能。",
+  "version": "0.0.5",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:zfj-js",
+    "onLanguage:javascript"
+  ],
+  "main": "./out/extension.js",
+  "extensionKind": [
+    "ui"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "zfjによるスクリプトの実行にはワークスペースの信頼が必要です。",
+      "restrictedConfigurations": [
+        "zfj.executablePath"
+      ]
+    }
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "zfj-js",
+        "aliases": [
+          "ZFJ JavaScript",
+          "zfj-js"
+        ],
+        "extensions": [
+          ".sjs",
+          ".djs"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "zfj-js",
+        "scopeName": "source.zfj",
+        "path": "./syntaxes/zfj.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "zfj-js",
+        "path": "./snippets/zfj.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "zfj.helloWorld",
+        "title": "ZFJ: Hello World"
+      },
+      {
+        "command": "zfj.export",
+        "title": "ZFJ: Export"
+      },
+      {
+        "command": "zfj.preview",
+        "title": "ZFJ: SVG Preview"
+      },
+      {
+        "command": "zfj.registerFileAssociations",
+        "title": "ZFJ: Register File Associations"
+      },
+      {
+        "command": "zfj.unregisterFileAssociations",
+        "title": "ZFJ: Unregister File Associations"
+      }
+    ],
+    "configuration": {
+      "title": "ZFJ",
+      "properties": {
+        "zfj.executablePath": {
+          "type": "string",
+          "default": "",
+          "scope": "machine",
+          "description": "zfj.exeの絶対パス。未設定の場合は書き出し時に選択します。"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "tsc -p ./",
+    "package": "vsce package --no-dependencies --allow-missing-repository --readme-path README.vsix.md",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "check": "tsc --noEmit -p ./",
+    "test": "npm run compile && node scripts/test-api.cjs && node scripts/test-file-associations.cjs"
+  },
+  "devDependencies": {
+    "@types/node": "20.14.2",
+    "@types/vscode": "1.90.0",
+    "@vscode/vsce": "4.0.0",
+    "typescript": "5.4.5"
+  }
+}

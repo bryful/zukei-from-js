@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="zfj/zfj.vcxproj" Id="36d436db-4f94-4313-9cdb-ee321b0dcb42" />
+</Solution>

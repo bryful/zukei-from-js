@@ -1,0 +1,4 @@
+// Windows icon resources: application, SVG script, DXF script.
+101 ICON "../assets/icons/zfj.ico"
+102 ICON "../assets/icons/sjs.ico"
+103 ICON "../assets/icons/djs.ico"

@@ -1,0 +1,15 @@
+.vscode/**
+src/**
+scripts/**
+.dev-profile/**
+.editor-profile/**
+restore-backups/**
+node_modules/**
+.pnpm-store/**
+pnpm-lock.yaml
+pnpm-workspace.yaml
+tsconfig.json
+**/*.map
+.gitignore
+*.vsix
+README.md

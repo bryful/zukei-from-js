@@ -1,0 +1,32 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "ZFJ: start local host",
+      "type": "process",
+      "command": "node",
+      "args": ["${workspaceFolder}/scripts/start-dev-host.cjs", "${execPath}", "${workspaceFolder}"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "dependsOn": "ZFJ: compile",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always" }
+    },
+    {
+      "label": "ZFJ: compile",
+      "type": "process",
+      "command": "node",
+      "args": ["${workspaceFolder}/node_modules/typescript/bin/tsc", "-p", "${workspaceFolder}"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": "$tsc",
+      "presentation": { "reveal": "always" }
+    },
+    {
+      "type": "npm",
+      "script": "watch",
+      "isBackground": true,
+      "problemMatcher": "$tsc-watch",
+      "presentation": { "reveal": "silent" },
+      "group": { "kind": "build", "isDefault": true }
+    }
+  ]
+}

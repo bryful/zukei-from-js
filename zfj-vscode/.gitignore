@@ -1,0 +1,7 @@
+node_modules/
+.pnpm-store/
+out/
+*.vsix
+.dev-profile/
+.editor-profile/
+restore-backups/

@@ -1,0 +1,187 @@
+{
+  "ZFJ: Set Unit": {
+    "prefix": "zunit",
+    "body": "drawing.setUnit(\"${1|mm,pt,px|}\");$0",
+    "description": "図面全体の単位を設定"
+  },
+  "ZFJ: Line": {
+    "prefix": "zline",
+    "body": "drawing.line(${1:0}, ${2:0}, ${3:100}, ${4:0});$0",
+    "description": "2点を結ぶ線"
+  },
+  "ZFJ: Rectangle": {
+    "prefix": "zrect",
+    "body": "drawing.rect(${1:0}, ${2:0}, ${3:100}, ${4:60});$0",
+    "description": "四角形"
+  },
+  "ZFJ: Circle": {
+    "prefix": "zcircle",
+    "body": "drawing.circle(${1:50}, ${2:30}, ${3:15});$0",
+    "description": "中心と半径を指定した円"
+  },
+  "ZFJ: Polygon": {
+    "prefix": "zpolygon",
+    "body": "drawing.polygon([[${1:0}, ${2:0}], [${3:100}, ${4:0}], [${5:50}, ${6:60}]]);$0",
+    "description": "3点以上の閉じた多角形"
+  },
+  "ZFJ: Style": {
+    "prefix": "zstyle",
+    "body": "{ stroke: \"${1:#000000}\", strokeWidth: ${2:0.5}, fill: ${3:null} }$0",
+    "description": "描画関数の最後の引数に渡すスタイル。lineではfillに色を指定できません。"
+  },
+  "ZFJ: SVG Canvas": {
+    "prefix": "zcanvas",
+    "body": [
+      "drawing.setUnit(\"px\");",
+      "drawing.setDpi(96);",
+      "drawing.setCanvas(${1:1920}, ${2:1080});",
+      "$0"
+    ],
+    "description": "96dpiの固定SVGキャンバス"
+  },
+  "ZFJ: Line Path": {
+    "prefix": "zpathline",
+    "body": "var ${1:shape} = path.line(${2:0}, ${3:0}, ${4:100}, ${5:0});$0",
+    "description": "描画せず線のパスを作成"
+  },
+  "ZFJ: Rectangle Path": {
+    "prefix": "zpathrect",
+    "body": "var ${1:shape} = path.rect(${2:0}, ${3:0}, ${4:100}, ${5:60});$0",
+    "description": "描画せず四角形のパスを作成"
+  },
+  "ZFJ: Circle Path": {
+    "prefix": "zpathcircle",
+    "body": "var ${1:shape} = path.circle(${2:50}, ${3:30}, ${4:15});$0",
+    "description": "描画せず円のパスを作成"
+  },
+  "ZFJ: Polygon Path": {
+    "prefix": "zpathpolygon",
+    "body": "var ${1:shape} = path.polygon([[${2:0}, ${3:0}], [${4:100}, ${5:0}], [${6:50}, ${7:60}]]);$0",
+    "description": "任意の頂点を指定した多角形のパスを作成"
+  },
+  "ZFJ: Draw Path": {
+    "prefix": "zdraw",
+    "body": "drawing.draw(${1:shape}, { stroke: \"${2:#003366}\", strokeWidth: ${3:0.5}, fill: ${4:null} });$0",
+    "description": "作成済みのパスを図面へ追加。元パスは変更しません。"
+  },
+  "ZFJ: Clipper2 Path Combine": {
+    "prefix": "zcombine",
+    "body": [
+      "var ${1:result} = path.combine(\"${2|or,and,xor|}\", ${3:a}, ${4:b});",
+      "drawing.draw(${1:result}, { stroke: \"${5:#003366}\", fill: \"${6:#66aaff}\" });$0"
+    ],
+    "description": "既存の2つの閉じたパスからSVG用の輪郭を計算。DXFでは元図形を出力。"
+  },
+  "ZFJ: SVG Display Combine": {
+    "prefix": "zsvgcombine",
+    "body": [
+      "var ${1:result} = path.svgcombine(\"${2|or,and,xor|}\", ${3:a}, ${4:b});",
+      "drawing.draw(${1:result}, { stroke: null, fill: \"${5:#66aaff}\" });$0"
+    ],
+    "description": "元図形を保持したSVG表示合成。DXFでは元図形を出力。"
+  },
+  "ZFJ: Transform Path": {
+    "prefix": "ztransform",
+    "body": [
+      "path.transform(${1:shape}, {",
+      "\tpos: [${2:0}, ${3:0}],",
+      "\trot: ${4:0},",
+      "\tscale: [${5:100}, ${6:100}],",
+      "\tanchor: \"${7|center,topLeft,top,topRight,centerLeft,centerRight,bottomLeft,bottomCenter,bottomRight,canvasCenter|}\"",
+      "});$0"
+    ],
+    "description": "元パスを移動・回転・拡縮。scaleは100が等倍。canvasCenterにはsetCanvasが必要。"
+  },
+  "ZFJ: Transformed Path Copy": {
+    "prefix": "ztransformed",
+    "body": [
+      "var ${1:copy} = path.transformed(${2:shape}, {",
+      "\tpos: [${3:60}, ${4:0}],",
+      "\trot: ${5:0},",
+      "\tscale: [${6:100}, ${7:100}],",
+      "\tanchor: \"${8|center,topLeft,top,topRight,centerLeft,centerRight,bottomLeft,bottomCenter,bottomRight,canvasCenter|}\"",
+      "});",
+      "drawing.draw(${1:copy});$0"
+    ],
+    "description": "元パスを変更せず変換したコピーを作成・描画"
+  },
+  "ZFJ: Regular Polygon Path": {
+    "prefix": "zregularpolygon",
+    "body": [
+      "var ${1:shape} = path.regularPolygon({",
+      "\tcenter: [${2:50}, ${3:50}],",
+      "\tradius: ${4:30},",
+      "\tradiusMode: \"${5|vertex,edge|}\",",
+      "\tsides: ${6:6},",
+      "\trot: ${7:0}",
+      "});",
+      "drawing.draw(${1:shape});$0"
+    ],
+    "description": "正多角形のパスを作成・描画。radiusModeは頂点まで／辺中心までの半径。"
+  },
+  "ZFJ: Star Path": {
+    "prefix": "zstar",
+    "body": [
+      "var ${1:shape} = path.star({",
+      "\tcenter: [${2:50}, ${3:50}],",
+      "\touterRadius: ${4:30},",
+      "\tinnerRadius: ${5:15},",
+      "\tpoints: ${6:5},",
+      "\trot: ${7:0}",
+      "});",
+      "drawing.draw(${1:shape});$0"
+    ],
+    "description": "星型のパスを作成・描画。0 < innerRadius < outerRadius。"
+  },
+  "ZFJ: Polyline": {
+    "prefix": "zpolyline",
+    "body": "drawing.polyline([[${1:0}, ${2:0}], [${3:100}, ${4:0}], [${5:100}, ${6:60}]], { stroke: \"${7:#003366}\", strokeWidth: ${8:0.5} });$0",
+    "description": "2点以上の開いた折れ線を直接描画。塗り色は指定不可。"
+  },
+  "ZFJ: Polyline Path": {
+    "prefix": "zpathpolyline",
+    "body": "var ${1:shape} = path.polyline([[${2:0}, ${3:0}], [${4:100}, ${5:0}], [${6:100}, ${7:60}]]);$0",
+    "description": "描画せず開いた折れ線パスを作成。合成には使えません。"
+  },
+  "ZFJ: Draw Regular Polygon": {
+    "prefix": "zdrawregularpolygon",
+    "body": "drawing.regularPolygon({ center: [${1:50}, ${2:50}], radius: ${3:30}, radiusMode: \"${4|vertex,edge|}\", sides: ${5:6}, rot: ${6:0} });$0",
+    "description": "パス変数を作らず正多角形を直接描画"
+  },
+  "ZFJ: Draw Star": {
+    "prefix": "zdrawstar",
+    "body": "drawing.star({ center: [${1:50}, ${2:50}], outerRadius: ${3:30}, innerRadius: ${4:15}, points: ${5:5}, rot: ${6:0} });$0",
+    "description": "パス変数を作らず星型を直接描画"
+  },
+  "ZFJ: Move Path": {
+    "prefix": "zmove",
+    "body": "path.move(${1:shape}, ${2:10}, ${3:20});$0",
+    "description": "元パスを相対移動。draw済みの図形は変わりません。"
+  },
+  "ZFJ: Moved Path Copy": {
+    "prefix": "zmoved",
+    "body": [
+      "var ${1:copy} = path.moved(${2:shape}, ${3:30}, ${4:0});",
+      "drawing.draw(${1:copy});$0"
+    ],
+    "description": "元パスを変えず相対移動したコピーを作成・描画"
+  },
+  "ZFJ: Path Move Method": {
+    "prefix": "zmethodmove",
+    "body": "${1:shape}.move(${2:10}, ${3:20});$0",
+    "description": "パス値のメソッドで元パスを相対移動"
+  },
+  "ZFJ: Path Moved Method": {
+    "prefix": "zmethodmoved",
+    "body": [
+      "var ${1:copy} = ${2:shape}.moved(${3:30}, ${4:0});",
+      "drawing.draw(${1:copy});$0"
+    ],
+    "description": "パス値のメソッドで相対移動したコピーを作成・描画"
+  },
+  "ZFJ: Fusion Outline Mode": {
+    "prefix": "zfusion",
+    "body": "drawing.setDxfMode(\"fusion\");$0",
+    "description": "DXFをFusion向けの輪郭として出力"
+  }
+}
