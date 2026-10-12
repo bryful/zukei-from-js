@@ -1,5 +1,7 @@
 #include "file_associations.h"
 #include "script.h"
+#define NOMINMAX
+#include <windows.h>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -16,6 +18,7 @@ struct Options
 {
     fs::path input;
     fs::path output;
+    fs::path inkscape;
     std::optional<std::string> unit;
     bool force = false;
     bool check = false;
@@ -35,6 +38,8 @@ void printHelp()
                  "  --install       Register .sjs/.djs for the current user\n"
                  "  --uninstall     Remove ZFJ file associations for the current user\n"
                  "  -o, --output    Output file\n"
+                 "                  .sjs accepts .svg or .pdf (requires Inkscape)\n"
+                 "  --inkscape      Path to inkscape.exe for PDF export\n"
                  "  --unit          Override the unit configured in JavaScript\n"
                  "  --fusion        DXF only: export sketch outlines without fill or styling\n"
                  "  --force         Overwrite an existing output file\n"
@@ -94,6 +99,12 @@ Options parseOptions(int argc, wchar_t **argv)
             else
                 throw std::runtime_error("Unit must be mm, pt or px");
         }
+        else if (arg == L"--inkscape")
+        {
+            if (++i >= argc || !options.inkscape.empty())
+                throw std::runtime_error("Specify one Inkscape executable path");
+            options.inkscape = argv[i];
+        }
         else if (arg == L"-o" || arg == L"--output")
         {
             if (++i >= argc || !options.output.empty())
@@ -143,6 +154,92 @@ void writeOutput(const fs::path &path, const std::string &data)
         throw std::runtime_error("Cannot write output");
 }
 
+fs::path findInkscape(const fs::path &configured)
+{
+    if (!configured.empty())
+        return fs::absolute(configured);
+    wchar_t found[32768];
+    const auto length = SearchPathW(nullptr, L"inkscape.exe", nullptr, 32768, found, nullptr);
+    if (length > 0 && length < 32768)
+        return found;
+    for (const auto variable : {L"ProgramFiles", L"ProgramFiles(x86)", L"LOCALAPPDATA"})
+    {
+        const auto count = GetEnvironmentVariableW(variable, found, 32768);
+        if (count == 0 || count >= 32768)
+            continue;
+        const auto candidate = fs::path(found) / (std::wstring(variable) == L"LOCALAPPDATA"
+                                                    ? L"Programs/Inkscape/bin/inkscape.exe"
+                                                    : L"Inkscape/bin/inkscape.exe");
+        if (fs::is_regular_file(candidate))
+            return candidate;
+    }
+    throw std::runtime_error("Inkscape not found; install Inkscape or specify --inkscape <path>");
+}
+
+// Windows command-line quoting, including trailing backslashes.
+std::wstring quoteArgument(const std::wstring &value)
+{
+    std::wstring result = L"\"";
+    size_t slashes = 0;
+    for (const auto ch : value)
+    {
+        if (ch == L'\\')
+            ++slashes;
+        else
+        {
+            result.append(slashes * (ch == L'"' ? 2 : 1), L'\\');
+            if (ch == L'"')
+                result += L'\\';
+            result += ch;
+            slashes = 0;
+        }
+    }
+    result.append(slashes * 2, L'\\');
+    return result + L'"';
+}
+
+void writePdf(const Options &options, const std::string &svg)
+{
+    const auto executable = findInkscape(options.inkscape);
+    wchar_t tempPath[MAX_PATH], tempFile[MAX_PATH];
+    if (!GetTempPathW(MAX_PATH, tempPath) || !GetTempFileNameW(tempPath, L"zfj", 0, tempFile))
+        throw std::runtime_error("Cannot create temporary SVG");
+    struct Cleanup
+    {
+        fs::path path;
+        ~Cleanup() { std::error_code ec; fs::remove(path, ec); }
+    } cleanup{tempFile};
+    writeOutput(cleanup.path, svg);
+    const auto staging = fs::path(std::wstring(tempFile) + L".pdf");
+    Cleanup pdfCleanup{staging};
+    auto command = quoteArgument(executable.wstring()) + L" " + quoteArgument(cleanup.path.wstring()) +
+                   L" --export-type=pdf --export-area-page " +
+                   quoteArgument(L"--export-filename=" + staging.wstring());
+    STARTUPINFOW startup{};
+    startup.cb = sizeof(startup);
+    PROCESS_INFORMATION process{};
+    if (!CreateProcessW(executable.c_str(), command.data(), nullptr, nullptr, FALSE,
+                        CREATE_NO_WINDOW, nullptr, nullptr, &startup, &process))
+        throw std::runtime_error("Cannot start Inkscape; check --inkscape path");
+    CloseHandle(process.hThread);
+    const auto wait = WaitForSingleObject(process.hProcess, 20000);
+    if (wait != WAIT_OBJECT_0)
+    {
+        TerminateProcess(process.hProcess, 1);
+        WaitForSingleObject(process.hProcess, INFINITE);
+        CloseHandle(process.hProcess);
+        throw std::runtime_error("Inkscape PDF export timed out");
+    }
+    DWORD code = 1;
+    GetExitCodeProcess(process.hProcess, &code);
+    CloseHandle(process.hProcess);
+    if (code != 0 || !fs::exists(staging) || fs::file_size(staging) == 0)
+        throw std::runtime_error("Inkscape PDF export failed");
+    // Publish only after successful conversion; preserve existing output on failure.
+    fs::copy_file(staging, options.output, options.force ? fs::copy_options::overwrite_existing
+                                                       : fs::copy_options::none);
+}
+
 } // namespace
 
 /// Windowsのエントリーポイント。引数解析、JS実行、形式選択、保存、終了コードを管理する。
@@ -182,7 +279,8 @@ int wmain(int argc, wchar_t **argv)
             options.output = options.input;
             options.output.replace_extension(extension);
         }
-        if (options.output.extension() != extension)
+        const bool pdf = svg && options.output.extension() == L".pdf";
+        if (options.output.extension() != extension && !pdf)
             throw std::runtime_error("Output extension does not match input");
         if (!options.check && !options.force && fs::exists(options.output))
             throw std::runtime_error("Output exists; use --force");
@@ -195,7 +293,12 @@ int wmain(int argc, wchar_t **argv)
         const auto unit = options.unit.value_or(drawing.unit);
         const auto document = zfj::render(drawing, svg, unit, options.fusion);
         if (!options.check)
-            writeOutput(options.output, document);
+        {
+            if (pdf)
+                writePdf(options, document);
+            else
+                writeOutput(options.output, document);
+        }
         std::cout << (options.check ? "Checked " : "Generated ") << drawing.shapes.size()
                   << " shapes.\n";
         return 0;

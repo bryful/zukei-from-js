@@ -67,13 +67,14 @@ async function exportDrawing(output: vscode.OutputChannel): Promise<void> {
     const destination = await vscode.window.showSaveDialog({
       title: 'ZFJ: Export',
       defaultUri: vscode.Uri.file(input.slice(0, -extension.length) + '.' + format),
-      filters: { [format.toUpperCase()]: [format] }
+      filters: extension === '.sjs' ? { SVG: ['svg'], PDF: ['pdf'] } : { DXF: ['dxf'] }
     });
     if (!destination) {
       return;
     }
-    if (destination.scheme !== 'file' || path.extname(destination.fsPath) !== '.' + format) {
-      throw new Error(`出力先はローカルの.${format}ファイルを指定してください。`);
+    const allowed = extension === '.sjs' ? ['.svg', '.pdf'] : ['.dxf'];
+    if (destination.scheme !== 'file' || !allowed.includes(path.extname(destination.fsPath))) {
+      throw new Error(`出力先はローカルの${allowed.join(' / ')}ファイルを指定してください。`);
     }
     const args = [input, '-o', destination.fsPath];
     try {

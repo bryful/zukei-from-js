@@ -4,6 +4,7 @@ JavaScriptで図形を記述して、SVG・DXFを作成するWindows用コンソ
 入力ファイルの拡張子で出力形式を選びます。
 
 - `.sjs` → SVG。イラストや画面素材向け。
+- `.sjs -o result.pdf` → PDF。別途インストールしたInkscapeで変換。
 - `.djs` → DXF。CAD向け。Fusion用の輪郭出力にも対応。
 
 線分・長方形・円・楕円・円弧・多角形・折れ線・正多角形・星型を描けます。
