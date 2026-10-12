@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="102mm" height="102mm" viewBox="-1 -1 102 102">
+<g fill="none" stroke="black" stroke-width="0.25">
+<line x1="0" y1="0" x2="100" y2="20"/>
+<polygon points="10,30 50,30 50,55 10,55 "/>
+<circle cx="75" cy="45" r="15"/>
+<polygon points="10,80 40,65 55,90 20,100 "/>
+<circle cx="70" cy="85" r="4"/>
+<circle cx="82" cy="85" r="4"/>
+<circle cx="94" cy="85" r="4"/>
+</g>
+</svg>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="120mm" height="100mm" viewBox="0 0 120 100" overflow="hidden">
+<g fill="none" stroke="black" stroke-width="0.25" stroke-linejoin="round">
+<g data-zfj-combine="svg" stroke="none"><defs><g id="zfj0" stroke="none"><rect x="10" y="10" width="70" height="70"/></g><g id="zfj1" stroke="none"><circle cx="75" cy="55" r="30"/></g><g id="zfj2"><use xlink:href="#zfj0"/><use xlink:href="#zfj1"/></g><filter id="zfj3" filterUnits="userSpaceOnUse" x="0" y="0" width="120" height="100"><feMorphology in="SourceAlpha" operator="dilate" radius="0.25" result="outer"/><feMorphology in="SourceAlpha" operator="erode" radius="0.25" result="inner"/><feComposite in="outer" in2="inner" operator="out" result="edge"/><feFlood flood-color="#003366"/><feComposite in2="edge" operator="in"/></filter></defs><g data-zfj-artwork="originals" fill="#66aaff"><g data-zfj-source="original"><rect x="10" y="10" width="70" height="70"/></g><g data-zfj-source="original"><circle cx="75" cy="55" r="30"/></g></g><g data-zfj-artwork="outline" fill="white" filter="url(#zfj3)"><g data-zfj-source="original"><rect x="10" y="10" width="70" height="70"/></g><g data-zfj-source="original"><circle cx="75" cy="55" r="30"/></g></g></g>
+</g>
+</svg>

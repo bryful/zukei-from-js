@@ -1,4 +1,4 @@
-# SVG・DXFの出力仕様
+# SVG・PDF・DXFの出力仕様
 
 [ドキュメント一覧](README.md) / [利用ガイド](../README.md)
 
@@ -7,6 +7,13 @@
 基本図形はline / rect / circle / polygon / polyline、変換後の楕円はellipseまたは円弧パスとして保存します。
 線・塗りは図形ごとの属性で指定し、線の結合はroundです。
 [固定キャンバスと実寸](units-and-canvas.md)、[合成データの構造](path-combine.md)も参照してください。
+
+## PDF
+
+`.sjs`の出力先に`.pdf`を指定すると、SVGをInkscapeで変換します。
+ページサイズ・単位・クリップ範囲はSVGのキャンバスを引き継ぎます。
+マスクやフィルターなどの表示効果はInkscapeのPDF変換仕様に依存します。
+インストール・実行方法は[PDF出力](cli.md#pdf出力)を参照してください。
 
 ## 通常のDXF
 

@@ -3,7 +3,7 @@
 [ドキュメント一覧](README.md) / [利用ガイド](../README.md)
 
 ```text
-zfj <file.djs|file.sjs> [-o output] [--unit mm|pt|px] [--fusion] [--force] [--check]
+zfj <file.djs|file.sjs> [-o output] [--unit mm|pt|px] [--fusion] [--inkscape path] [--force] [--check]
 zfj --install
 zfj --uninstall
 ```

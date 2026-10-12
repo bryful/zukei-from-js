@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="180mm" height="120mm" viewBox="0 0 180 120" overflow="hidden">
+<g fill="none" stroke="black" stroke-width="0.25" stroke-linejoin="round">
+<circle cx="35" cy="30" r="20" stroke="#000000" fill="#66aaff" stroke-width="0.25"/>
+<ellipse cx="115" cy="30" rx="40" ry="20" transform="rotate(0 115 30)" stroke="#000000" fill="#ffcc66" stroke-width="0.25"/>
+<path d="M55 85A20 20 0 1 1 35 65" stroke="#0066cc" fill="none" stroke-width="1"/>
+<path d="M155 85A40 20 0 0 0 115 65" stroke="#cc6600" fill="none" stroke-width="1"/>
+</g>
+</svg>

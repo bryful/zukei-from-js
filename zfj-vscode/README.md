@@ -1,8 +1,8 @@
 # ZFJ VS Code拡張
 
-`.sjs` / `.djs`の色分け、drawing / path APIの補完・説明、スニペット、SVG / DXF書き出し、SVGプレビュー、Windowsの拡張子・アイコン登録を提供します。
+`.sjs` / `.djs`の色分け、drawing / path APIの補完・説明、スニペット、SVG / PDF / DXF書き出し、SVGプレビュー、Windowsの拡張子・アイコン登録を提供します。
 
-現在のバージョンは0.0.6です。コマンド名は英語表記です。
+現在のバージョンは0.0.7です。コマンド名は英語表記です。
 
 ## インストール
 
@@ -18,7 +18,7 @@ VSIXの内部に`zfj.exe`は含まれません。初回の書き出し・プレ�
 ## 使い方
 
 - `.sjs` / `.djs`を開き、`drawing.` / `path.`を入力して補完します。候補が出ないときはCtrl+Spaceを押します。
-- `ZFJ: Export`で保存・実行し、SVGまたはDXFを生成します。
+- `ZFJ: Export`で保存・実行し、.sjsはSVG / PDF、.djsはDXFを生成します。PDFには対応版のzfj.exeとInkscapeが必要です。
 - `.sjs`では`ZFJ: SVG Preview`を開くと、保存時に表示を更新します。
 - `ZFJ: Register File Associations`でWindowsに`.sjs` / `.djs`と専用アイコンを登録します。
 - `ZFJ: Unregister File Associations`でZFJの関連付けを解除します。ファイルや拡張機能は削除しません。

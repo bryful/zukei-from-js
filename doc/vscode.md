@@ -2,7 +2,7 @@
 
 [ドキュメント一覧](README.md) / [利用ガイド](../README.md)
 
-現在の拡張バージョンは0.0.6です。コマンド名は英語表記です。
+現在の拡張バージョンは0.0.7です。コマンド名は英語表記です。
 現在はVSIXによるインストールのみです。Marketplaceでは公開していません。
 VS Code 1.90以降と、GitHub Releasesの配布アーカイブに含まれる`zfj.exe`を使用します。
 通常利用にNode.js・npmやF5での開発ホスト起動は不要です。
@@ -21,18 +21,30 @@ VS Code 1.90以降と、GitHub Releasesの配布アーカイブに含まれる`z
 拡張機能の識別子は `zfj-local.zfj-vscode` です。`zfj-local` はローカル配布用の識別子で、
 Marketplaceへの登録・公開は行っていません。ライセンスは[MIT](../LICENSE)です。
 
-## SVG / DXFの書き出し
+## SVG / PDF / DXFの書き出し
 
 1. VS Codeでローカルの `.sjs` または `.djs` ファイルを開きます。
 2. Ctrl+Shift+Pから `ZFJ: Export` を実行します。
 3. 初回は `zfj.exe` を選びます。配布アーカイブから展開した実行ファイルを指定します。
-4. 出力先を選びます。`.sjs` はSVG、`.djs` はDXFになります。
+4. 出力先を選びます。`.sjs`は保存ダイアログのファイルの種類でSVGまたはPDFを選択できます。`.djs`はDXFになります。
 5. 既存の出力先の場合は上書きを確認します。
 
 編集内容は実行前に保存されます。実行ログやエラーは「出力」パネルの `ZFJ` に表示します。
 exeの場所はユーザー設定に保存します。変更する場合は設定画面で `zfj.executablePath` を検索してください。
 未信頼のワークスペース、リモートファイル、未保存の新規ファイルからは実行できません。
 コマンド引数はシェルを経由せずに渡します。プロセスの待機上限は30秒です。
+
+### PDF出力の準備
+
+PDF対応版の`zfj.exe`と、別途インストールしたInkscapeが必要です。VSIXだけを更新した場合は、`zfj.executablePath`もPDF対応版のexeを指すようにしてください。
+InkscapeはPATH、Program Files、ユーザーの`Programs/Inkscape`から自動検索します。
+PATHを変更した場合はVS Codeを再起動してください。
+
+Inkscapeを独自の場所に配置している場合、拡張にはInkscapeのパス設定がないため、PATHにその`bin`フォルダを追加するか、CLIの`--inkscape`で指定して出力します。
+[PDFのコマンド例](cli.md#pdf出力)を参照してください。
+
+PDFはSVGを一時生成してInkscapeを非表示で呼び出し、キャンバスを1ページとして変換します。変換の制限時間は20秒です。
+SVGプレビューはPDF選択後もSVGで表示します。
 
 ## Windowsの拡張子登録・解除
 

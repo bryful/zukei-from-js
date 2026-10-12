@@ -62,6 +62,7 @@ python tests/radial_shapes.py
 python tests/polyline_move.py
 python tests/circle_arcs.py
 python tests/offsets.py
+python tests/pdf.py
 .\x64\Release\zfj.exe tests\infinity.sjs --check
 ```
 
@@ -75,9 +76,20 @@ python tests/offsets.py
 | `polyline_move.py` | 開いた折れ線、移動・コピー・エラー時の保持 |
 | `offsets.py` | 開閉パスの拡張・縮小、cap・join、穴、DXF・Fusion、エラー時の停止 |
 | `circle_arcs.py` | 円の互換性、楕円・円弧、方向・変換・入力検証、DXF監査・Fusion |
+| `pdf.py` | PDFの形式選択・失敗時の既存出力保持・Unicodeパス。引数にinkscape.exeを渡すと実変換も検証 |
 | `infinity.sjs` | QuickJSのInfinity |
 
 [VS Code拡張の開発手順](vscode-development.md)、[依存ライブラリ](dependencies.md)も参照してください。
+
+## PDF変換の検証
+
+PDFの実変換も検証する場合は、Inkscapeの実行ファイルを指定します。
+
+```powershell
+python tests/pdf.py "C:\Program Files\Inkscape\bin\inkscape.exe"
+```
+
+引数なしの`pdf.py`はInkscape不要で、形式の選択、`--check`、失敗時の既存ファイル保持、Unicodeパスを検証します。
 
 ## ファイル関連付けの検証
 

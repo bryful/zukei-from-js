@@ -81,6 +81,16 @@ python tests/pdf.py
 
 [VS Code拡張の開発手順](vscode-development.md)、[依存ライブラリ](dependencies.md)も参照してください。
 
+## PDF変換の検証
+
+PDFの実変換も検証する場合は、Inkscapeの実行ファイルを指定します。
+
+```powershell
+python tests/pdf.py "C:\Program Files\Inkscape\bin\inkscape.exe"
+```
+
+引数なしの`pdf.py`はInkscape不要で、形式の選択、`--check`、失敗時の既存ファイル保持、Unicodeパスを検証します。
+
 ## ファイル関連付けの検証
 
 x64 Native Tools Command Promptでリポジトリのルートから実行します。

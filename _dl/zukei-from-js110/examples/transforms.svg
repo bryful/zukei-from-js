@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="180mm" height="105mm" viewBox="0 0 180 105" overflow="hidden">
+<g fill="none" stroke="black" stroke-width="0.25" stroke-linejoin="round">
+<polygon points="10,10 40,10 40,30 10,30 " stroke="#777777" fill="#eeeeee" stroke-width="0.5"/>
+<polygon points="73.8342574090824,6.42801124046776 114.618107825732,25.4458330187992 106.165742590918,43.5719887595322 65.3818921742684,24.5541669812008 " stroke="#003366" fill="#66aaff" stroke-width="0.5"/>
+<polygon points="130,15 160,15 160,35 130,35 " stroke="#006633" fill="#66cc99" stroke-width="0.5"/>
+<circle cx="25" cy="70" r="12" stroke="#777777" fill="#eeeeee" stroke-width="0.5"/>
+<ellipse cx="85" cy="70" rx="21.6" ry="8.4" transform="rotate(-20 85 70)" stroke="#663300" fill="#ffcc66" stroke-width="0.5"/>
+<path data-zfj-combine="svg" data-zfj-artwork="compound" fill-rule="evenodd" fill="#cc99cc" stroke="#663366" stroke-width="0.5" d="M130 58L154.148145657227 64.470476127563L147.677669529664 88.6186217847897L123.529523872437 82.1481456572267ZM162.265859980689 78.959363521899A12 12 0 0 1 138.265859980689 78.959363521899A12 12 0 0 1 162.265859980689 78.959363521899Z"/>
+</g>
+</svg>

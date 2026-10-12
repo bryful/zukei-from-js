@@ -28,6 +28,11 @@ SVG用の輪郭合成に使用します。`clipper.engine.cpp`と、オフセッ
 
 ## その他
 
+### PDF用の外部ツール
+
+PDF出力時だけ、別途インストールしたInkscapeの実行ファイルを呼び出します。Inkscape本体はリポジトリ・zfj.exe・VSIXに同梱しません。SVG・DXF出力やビルドには不要です。
+検索先とパスの指定方法は[PDF出力](cli.md#pdf出力)を参照してください。
+
 PythonのezdxfはDXF検証用で、zfj実行時には不要です。
 VS Code拡張の開発依存は[zfj-vscode/package.json](../zfj-vscode/package.json)を参照してください。
 VS Code拡張も本リポジトリの[MIT License](../LICENSE)に従います。

@@ -3,7 +3,7 @@
 [ドキュメント一覧](README.md) / [利用ガイド](../README.md)
 
 ```text
-zfj <file.djs|file.sjs> [-o output] [--unit mm|pt|px] [--fusion] [--force] [--check]
+zfj <file.djs|file.sjs> [-o output] [--unit mm|pt|px] [--fusion] [--inkscape path] [--force] [--check]
 zfj --install
 zfj --uninstall
 ```
@@ -11,6 +11,7 @@ zfj --uninstall
 | 引数 | 動作 |
 |---|---|
 | `-o`, `--output` | 出力ファイルを指定 |
+| `--inkscape <path>` | PDF変換に使うinkscape.exeのパスを指定 |
 | `--unit mm / pt / px` | JSの単位設定を上書き |
 | `--fusion` | DXFを輪郭のみで出力。`.djs`専用 |
 | `--force` | 既存の出力ファイルを上書き |
@@ -28,7 +29,7 @@ zfj --uninstall
 ```
 
 - `.sjs` → SVG、`.djs` → DXF。拡張子は小文字。
-- 出力先省略時は入力と同じフォルダ・同じ名前。出力拡張子の不一致はエラー。
+- 出力先省略時は入力と同じフォルダ・同じ名前。`.sjs`は`-o result.pdf`でPDFも指定できます。それ以外の出力拡張子の不一致はエラー。
 - 既存ファイルは `--force` で上書き。出力先フォルダは事前に作成してください。
 - `--check` は実行・検証のみ。`--help` / `--version` 対応。
 - 成功は終了コード 0、失敗は 1。エラーは標準エラーへ出力。
@@ -37,6 +38,18 @@ zfj --uninstall
 `--check`もSVG用のClipper2計算・SVG表示合成データの生成まで実行します。
 ビューアーや編集ソフトによる実際の表示・読み込みを確認する機能ではありません。
 DPI・キャンバスの指定は[JSの設定関数](units-and-canvas.md)で行います。
+
+## PDF出力
+
+```powershell
+.\x64\Release\zfj.exe examples\basic.sjs -o result.pdf
+.\x64\Release\zfj.exe examples\basic.sjs -o result.pdf --inkscape "C:\Tools\Inkscape\bin\inkscape.exe" --force
+```
+
+Inkscapeの別途インストールが必要です。PATH、Program Files、ユーザーのPrograms/Inkscapeから自動検索します。見つからない場合は`--inkscape`で指定してください。
+SVGを一時ファイルに保存してInkscapeを非表示で呼び出し、キャンバスを1ページのPDFに変換します。変換の制限時間は20秒です。失敗時は既存の出力を保持し、一時ファイルを削除します。
+`--check`はSVG生成までの検証で、Inkscapeの起動・PDF変換は行いません。`.djs`からのPDF出力には対応していません。
+VS Codeの`ZFJ: Export`でも`.sjs`の保存形式にPDFを選べます。
 
 ## 拡張子の登録・解除
 

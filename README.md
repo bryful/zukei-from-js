@@ -1,7 +1,7 @@
 # zfj
 
-JavaScriptで図形を記述して、SVG・DXFを作成するWindows用コンソールアプリです。
-入力ファイルの拡張子で出力形式を選びます。
+JavaScriptで図形を記述して、SVG・PDF・DXFを作成するWindows用コンソールアプリです。
+入力ファイルの拡張子で既定の出力形式を選びます。PDFは出力先の拡張子で指定します。
 
 - `.sjs` → SVG。イラストや画面素材向け。
 - `.sjs -o result.pdf` → PDF。別途インストールしたInkscapeで変換。
@@ -82,6 +82,7 @@ SVGはYが下、DXFはYが上へ増えます。DXFではキャンバスによる
 
 ```powershell
 C:\Tools\zfj\zfj.exe sample.sjs -o result.svg --force
+C:\Tools\zfj\zfj.exe sample.sjs -o result.pdf --force
 C:\Tools\zfj\zfj.exe sample.sjs --check
 C:\Tools\zfj\zfj.exe sample.djs --fusion
 ```
@@ -89,6 +90,9 @@ C:\Tools\zfj\zfj.exe sample.djs --fusion
 出力先の省略時は入力と同じフォルダ・同じ名前になります。
 既存ファイルを上書きするときは`--force`を指定してください。`--check`は保存せずに実行・検証します。
 Fusion向けには`--fusion`で色・塗り・線幅を除いた輪郭を出力できます。
+PDF出力にはInkscapeの別途インストールが必要です。PATHまたは標準のインストール先から自動検索します。
+見つからない場合は`--inkscape "C:\Tools\Inkscape\bin\inkscape.exe"`で指定してください。
+PDFはSVGのキャンバス寸法を引き継ぐ1ページの文書です。`.sjs`からのみ出力できます。
 [すべての引数](doc/cli.md)と[出力仕様](doc/output-formats.md)を参照してください。
 
 ## 単位と画面サイズ
@@ -123,7 +127,7 @@ SVG表示合成とClipper2の輪郭合成は、保存するデータと編集性
 
 ## VS Codeから使う
 
-`zfj-vscode`は、色分け・API補完・スニペット・SVG/DXFの書き出し・SVGプレビュー・Windowsの拡張子登録を提供します。
+`zfj-vscode` v0.0.7は、色分け・API補完・スニペット・SVG/PDF/DXFの書き出し・SVGプレビュー・Windowsの拡張子登録を提供します。
 **現在はVSIXでのインストールのみ**で、Marketplaceには公開していません。
 
 インストール後、次の手順で書き出せます。

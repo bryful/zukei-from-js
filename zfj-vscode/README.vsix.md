@@ -1,6 +1,6 @@
 # ZFJ VS Code拡張
 
-`.sjs` / `.djs`の色分け、drawing / path APIの補完・説明、スニペット、SVG / DXF書き出し、SVGプレビュー、Windowsの拡張子・アイコン登録を提供します。
+`.sjs` / `.djs`の色分け、drawing / path APIの補完・説明、スニペット、SVG / PDF / DXF書き出し、SVGプレビュー、Windowsの拡張子・アイコン登録を提供します。
 
 ## インストール
 
@@ -17,7 +17,7 @@ VS CodeでCtrl+Shift+P → `Extensions: Install from VSIX...`を選び、展開�
 
 Ctrl+Shift+Pから実行します。
 
-- **ZFJ: Export** — 開いている.sjs / .djsを保存し、SVG / DXFへ書き出します。
+- **ZFJ: Export** — 開いている.sjs / .djsを保存し、.sjsはSVG / PDF、.djsはDXFへ書き出します。
 - **ZFJ: SVG Preview** — .sjsの図形を横に表示し、保存時に更新します。
 - **ZFJ: Register File Associations** — zfj.exe --installで現在のWindowsユーザーに.sjs / .djsと専用アイコンを登録します。
 - **ZFJ: Unregister File Associations** — zfj.exe --uninstallでZFJの関連付けを解除します。
@@ -28,6 +28,12 @@ Ctrl+Shift+Pから実行します。
 他アプリの既定設定は維持します。必要に応じてWindowsの「プログラムから開く」でZFJを選択してください。exeを移動したら設定を変更して再登録してください。
 登録の削除はexeを削除する前に実行してください。ソース・画像・exe・拡張機能は削除しません。
 登録機能には--install / --uninstall対応の新しいzfj.exeが必要です。
+
+## PDF出力
+
+PDF出力にはPDF対応版のzfj.exeと、別途インストールしたInkscapeが必要です。InkscapeはPATHまたは標準のインストール先から自動検索します。
+`.sjs`を開いて`ZFJ: Export`を実行し、保存ダイアログのファイルの種類でPDFを選択してください。
+PATH変更後はVS Codeを再起動します。独自の場所にあるInkscapeを指定する場合はPATHに追加するか、CLIの`--inkscape`を使用してください。
 
 ## 編集
 
